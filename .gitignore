@@ -1,0 +1,49 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables / secrets
+.env
+.env.local
+
+# Generated video output
+output/
+
+# Stock footage (large raw video, not source)
+stock/*.mp4
+stock/*.mov
+stock/*.MOV
+
+# Runtime artifacts left in repo root by the pipeline
+post_title.png
+title.wav
+output[0-9]*.wav
+source.mp3
+
+# Model caches
+.coqui/
+*.pt
+*.ckpt
+
+# Editor / tooling
+.idea/
+.vscode/
+*.swp
+
+# Claude Code — user-local permission allowlist
+.claude/settings.local.json
