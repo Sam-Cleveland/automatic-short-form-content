@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "shortform"
+version = "0.1.0"
+description = "Reddit-to-short-form-video automation pipeline with swappable TTS and transcription backends."
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Sam Cleveland" }]
+dependencies = [
+    "requests>=2.31",
+    "pillow>=10.0",
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "ffmpeg-python>=0.2",
+    "typer>=0.12",
+    "tenacity>=8.2",
+]
+
+[project.optional-dependencies]
+# Local ML models (heavy — pulls in PyTorch)
+local = [
+    "torch",
+    "torchaudio",
+    "TTS==0.22.0",
+    "transformers>=4.40",
+    "accelerate>=0.30",
+]
+# Cloud API backends (lightweight)
+cloud = [
+    "openai>=1.30",
+    "elevenlabs>=1.0",
+]
+# Dev tooling
+dev = [
+    "ruff>=0.6",
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+shortform = "shortform.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shortform"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "SIM", # simplify
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N802"] # allow non-snake_case test names
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true

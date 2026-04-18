@@ -1,0 +1,60 @@
+# Default pipeline configuration.
+# Override with `shortform --config path/to/custom.yaml`.
+
+# Backend selection — one of the registered adapters in each category.
+backends:
+  source: reddit
+  tts: coqui           # coqui | elevenlabs
+  transcribe: whisper_local   # whisper_local | whisper_api
+
+# Paths (relative to project root unless absolute)
+paths:
+  stock_dir: stock
+  output_dir: output
+  resources_dir: .     # flat layout currently; assets live at repo root
+
+# Assets used by the title card renderer
+assets:
+  title_font: /Library/Fonts/SF-Pro-Rounded-Semibold.otf
+  caption_font: Bangers-Regular.ttf
+  user_overlay: user.png
+  likes_comments_overlay: likes_comments.png
+  pfp_overlay: pfp.png
+  awards_overlay: awards.png
+
+# TTS (Coqui local) config
+tts_coqui:
+  model: tts_models/multilingual/multi-dataset/xtts_v2
+  speaker_wav: en_uk_003.mp3
+  language: en
+
+# TTS (ElevenLabs cloud) config
+tts_elevenlabs:
+  voice_id: ""        # set in .env or here
+  model: eleven_multilingual_v2
+  stability: 0.5
+  similarity_boost: 0.75
+
+# Transcription (Whisper local) config
+transcribe_whisper_local:
+  model_id: openai/whisper-small
+  chunk_length_s: 30
+  batch_size: 16
+
+# Transcription (OpenAI API) config
+transcribe_whisper_api:
+  model: whisper-1
+
+# Video output
+video:
+  width: 720
+  height: 720
+  fps: 60
+  audio_codec: aac
+  video_codec: libx264
+
+# Batch behavior
+batch:
+  skip_if_exists: true
+  max_retries: 3
+  retry_backoff_seconds: 2
