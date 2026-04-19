@@ -26,10 +26,26 @@ class CoquiTTS:
         if self._tts is not None:
             return
         os.environ["COQUI_TOS_AGREED"] = "1"
+        import functools  # noqa: PLC0415
+
+        import torch  # noqa: PLC0415
         from TTS.api import TTS  # noqa: PLC0415
 
-        log.info("Loading Coqui model %s", self._model)
-        self._tts = TTS(model_name=self._model, progress_bar=True)
+        # PyTorch ≥2.6 defaults weights_only=True which blocks TTS's pickle-based
+        # checkpoint loading. Patch torch.load for the duration of model init only.
+        _orig_load = torch.load
+
+        @functools.wraps(_orig_load)
+        def _permissive_load(f, *args, **kwargs):
+            kwargs.setdefault("weights_only", False)
+            return _orig_load(f, *args, **kwargs)
+
+        torch.load = _permissive_load
+        try:
+            log.info("Loading Coqui model %s", self._model)
+            self._tts = TTS(model_name=self._model, progress_bar=True)
+        finally:
+            torch.load = _orig_load
 
     def synthesize(self, text: str, out_path: Path) -> None:
         self._init()

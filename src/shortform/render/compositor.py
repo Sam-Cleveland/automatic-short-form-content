@@ -18,20 +18,57 @@ from __future__ import annotations
 
 import logging
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 
 log = logging.getLogger(__name__)
 
+# Known Homebrew locations for ffmpeg-full (which ships with libass).
+_FFMPEG_CANDIDATES = [
+    "/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg",
+    "/usr/local/opt/ffmpeg-full/bin/ffmpeg",
+    "ffmpeg",
+]
+
+
+@lru_cache(maxsize=1)
+def _ffmpeg_bin() -> str:
+    """Return a path to an ffmpeg binary that has the `ass` filter (libass).
+
+    Checks candidates in order; raises RuntimeError if none qualify.
+    Install the required build on macOS with: brew install ffmpeg-full
+    """
+    for candidate in _FFMPEG_CANDIDATES:
+        try:
+            result = subprocess.run(
+                [candidate, "-filters"],
+                capture_output=True, text=True, timeout=10,
+            )
+            if " ass " in result.stdout:
+                log.debug("Using ffmpeg binary: %s", candidate)
+                return candidate
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+    raise RuntimeError(
+        "No ffmpeg binary with libass support found. "
+        "Install it on macOS with: brew install ffmpeg-full"
+    )
+
 
 def _audio_duration(path: Path) -> float:
-    """Return duration in seconds using ffprobe."""
-    import ffmpeg  # noqa: PLC0415
+    """Return duration in seconds via ffprobe (from the same build as _ffmpeg_bin)."""
+    ffprobe = str(Path(_ffmpeg_bin()).parent / "ffprobe")
+    import json  # noqa: PLC0415
 
-    probe = ffmpeg.probe(str(path))
-    for stream in probe["streams"]:
-        if stream.get("codec_type") == "audio":
+    result = subprocess.run(
+        [ffprobe, "-v", "quiet", "-print_format", "json", "-show_streams", "-show_format", str(path)],
+        capture_output=True, text=True, check=True,
+    )
+    data = json.loads(result.stdout)
+    for stream in data.get("streams", []):
+        if stream.get("codec_type") == "audio" and "duration" in stream:
             return float(stream["duration"])
-    return float(probe["format"]["duration"])
+    return float(data["format"]["duration"])
 
 
 def concat_audio(inputs: list[Path], out_path: Path) -> float:
@@ -43,7 +80,7 @@ def concat_audio(inputs: list[Path], out_path: Path) -> float:
             f.write(f"file '{p.absolute()}'\n")
 
     cmd = [
-        "ffmpeg", "-y",
+        _ffmpeg_bin(), "-y",
         "-f", "concat", "-safe", "0",
         "-i", str(list_path),
         "-c", "copy",
@@ -99,7 +136,7 @@ def compose(
     # fmt: on
 
     cmd = [
-        "ffmpeg", "-y",
+        _ffmpeg_bin(), "-y",
         "-i", str(stock_path),            # [0] stock video
         "-i", str(audio_path),            # [1] audio
         "-loop", "1", "-i", str(title_card),  # [2] title card PNG

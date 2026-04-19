@@ -6,6 +6,12 @@ Automated pipeline that converts Reddit posts into short-form videos (TikTok / I
 
 ## Setup
 
+**macOS system prerequisite** — the standard Homebrew `ffmpeg` lacks `libass` (needed for caption burn-in). Install the full build first:
+
+```bash
+brew install ffmpeg-full
+```
+
 Python 3.11.7 required (see `.python-version`).
 
 ```bash

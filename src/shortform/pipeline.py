@@ -151,14 +151,20 @@ def run(url: str, cfg: Config) -> Path:
         duration = compositor.concat_audio([title_wav] + sentence_wavs, audio_path)
         title_dur = compositor._audio_duration(title_wav)
 
+        # Copy caption font into temp dir so FFmpeg's fontsdir has no spaces
+        import shutil  # noqa: PLC0415
+
+        caption_font_src = resources / cfg.assets.caption_font
+        caption_font_tmp = tmp / caption_font_src.name
+        shutil.copy2(caption_font_src, caption_font_tmp)
+
         # Captions ASS file
         captions_path = tmp / "captions.ass"
-        caption_font = str(resources / cfg.assets.caption_font)
         captions_mod.write(
             words,
             captions_path,
             title_offset=title_dur,
-            caption_font=caption_font,
+            caption_font=caption_font_tmp.stem,  # font name without extension
             width=cfg.video.width,
             height=cfg.video.height,
         )
@@ -177,7 +183,7 @@ def run(url: str, cfg: Config) -> Path:
             fps=cfg.video.fps,
             video_codec=cfg.video.video_codec,
             audio_codec=cfg.video.audio_codec,
-            caption_font_dir=str(resources.absolute()),
+            caption_font_dir=str(tmp),  # font was copied here — no spaces in path
         )
 
     return out_path
