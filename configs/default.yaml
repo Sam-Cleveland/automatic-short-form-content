@@ -4,7 +4,7 @@
 # Backend selection — one of the registered adapters in each category.
 backends:
   source: reddit
-  tts: coqui           # coqui | elevenlabs
+  tts: kokoro          # kokoro | edge_tts | coqui | elevenlabs
   transcribe: whisper_local   # whisper_local | whisper_api
 
 # Paths (relative to project root unless absolute)
@@ -22,10 +22,29 @@ assets:
   pfp_overlay: pfp.png
   awards_overlay: awards.png
 
+# TTS (Kokoro local) config — fast CPU-based ONNX, no GPU required
+# Voices: bm_george (British male), am_michael (US male), af_bella/af_heart (US female)
+#         bf_emma/bf_isabella (British female), am_adam (US male, deeper)
+tts_kokoro:
+  voice: bm_george
+  speed: 1.0
+  lang: en-us
+  model_repo: fastrtc/kokoro-onnx
+
+# TTS (Edge TTS cloud) config — Microsoft neural voices, requires internet
+# Voices: en-GB-RyanNeural, en-US-GuyNeural, en-US-AriaNeural, en-US-JennyNeural
+tts_edge:
+  voice: en-GB-RyanNeural
+
 # TTS (Coqui local) config
+# speaker: built-in XTTS v2 voice name — takes priority over speaker_wav when set.
+#   speaker_wav requires 6–30s of clean speech; shorter files produce garbled audio.
+#   Built-in options (no reference file needed): Claribel Dervla, Daisy Studious,
+#   Gracie Wise, Craig Gutsy, Damien Black, Viktor Eka, Nova Hogarth, Badr Odhiambo
 tts_coqui:
   model: tts_models/multilingual/multi-dataset/xtts_v2
   speaker_wav: en_uk_003.mp3
+  speaker: "Craig Gutsy"
   language: en
 
 # TTS (ElevenLabs cloud) config

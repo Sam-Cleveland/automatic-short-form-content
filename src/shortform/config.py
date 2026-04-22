@@ -35,7 +35,19 @@ class AssetsConfig(BaseModel):
 class CoquiConfig(BaseModel):
     model: str = "tts_models/multilingual/multi-dataset/xtts_v2"
     speaker_wav: str = "en_uk_003.mp3"
+    speaker: str = ""  # built-in XTTS speaker name; takes priority over speaker_wav when set
     language: str = "en"
+
+
+class KokoroConfig(BaseModel):
+    voice: str = "bm_george"  # bm_george (British male), am_michael (US male), af_bella (US female)
+    speed: float = 1.0
+    lang: str = "en-us"
+    model_repo: str = "fastrtc/kokoro-onnx"
+
+
+class EdgeTTSConfig(BaseModel):
+    voice: str = "en-GB-RyanNeural"  # en-US-GuyNeural, en-GB-RyanNeural, en-US-AriaNeural
 
 
 class ElevenLabsConfig(BaseModel):
@@ -74,6 +86,8 @@ class Config(BaseModel):
     paths: PathsConfig = PathsConfig()
     assets: AssetsConfig = AssetsConfig()
     tts_coqui: CoquiConfig = CoquiConfig()
+    tts_kokoro: KokoroConfig = KokoroConfig()
+    tts_edge: EdgeTTSConfig = EdgeTTSConfig()
     tts_elevenlabs: ElevenLabsConfig = ElevenLabsConfig()
     transcribe_whisper_local: WhisperLocalConfig = WhisperLocalConfig()
     transcribe_whisper_api: WhisperAPIConfig = WhisperAPIConfig()

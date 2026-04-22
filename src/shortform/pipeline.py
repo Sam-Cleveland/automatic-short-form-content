@@ -24,7 +24,16 @@ def _build_tts(cfg: Config):
         from .tts.coqui import CoquiTTS  # noqa: PLC0415
 
         c = cfg.tts_coqui
-        return CoquiTTS(model=c.model, speaker_wav=c.speaker_wav, language=c.language)
+        return CoquiTTS(model=c.model, speaker_wav=c.speaker_wav, language=c.language, speaker=c.speaker)
+    if backend == "kokoro":
+        from .tts.kokoro import KokoroTTS  # noqa: PLC0415
+
+        c = cfg.tts_kokoro
+        return KokoroTTS(voice=c.voice, speed=c.speed, lang=c.lang, model_repo=c.model_repo)
+    if backend == "edge_tts":
+        from .tts.edge_tts_adapter import EdgeTTS  # noqa: PLC0415
+
+        return EdgeTTS(voice=cfg.tts_edge.voice)
     if backend == "elevenlabs":
         from .tts.elevenlabs import ElevenLabsTTS  # noqa: PLC0415
 
@@ -35,7 +44,7 @@ def _build_tts(cfg: Config):
             stability=c.stability,
             similarity_boost=c.similarity_boost,
         )
-    raise ValueError(f"Unknown TTS backend: {backend!r}. Choose 'coqui' or 'elevenlabs'.")
+    raise ValueError(f"Unknown TTS backend: {backend!r}. Choose 'kokoro', 'edge_tts', 'coqui', or 'elevenlabs'.")
 
 
 def _build_transcriber(cfg: Config):

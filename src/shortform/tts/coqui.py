@@ -16,9 +16,10 @@ class CoquiTTS:
     importing this module is safe even when the `[local]` extra is absent.
     """
 
-    def __init__(self, model: str, speaker_wav: str, language: str = "en") -> None:
+    def __init__(self, model: str, speaker_wav: str, language: str = "en", speaker: str = "") -> None:
         self._model = model
         self._speaker_wav = speaker_wav
+        self._speaker = speaker  # built-in speaker name; takes priority over speaker_wav
         self._language = language
         self._tts = None  # deferred
 
@@ -52,10 +53,10 @@ class CoquiTTS:
 
     def synthesize(self, text: str, out_path: Path) -> None:
         self._init()
-        self._tts.tts_to_file(
-            text=text,
-            speaker_wav=self._speaker_wav,
-            language=self._language,
-            file_path=str(out_path),
-        )
+        kwargs: dict = dict(text=text, language=self._language, file_path=str(out_path))
+        if self._speaker:
+            kwargs["speaker"] = self._speaker
+        else:
+            kwargs["speaker_wav"] = self._speaker_wav
+        self._tts.tts_to_file(**kwargs)
         log.debug("Synthesized → %s", out_path)
