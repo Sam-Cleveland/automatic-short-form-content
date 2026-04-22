@@ -31,6 +31,9 @@ class CoquiTTS:
         import torch  # noqa: PLC0415
         from TTS.api import TTS  # noqa: PLC0415
 
+        gpu = torch.cuda.is_available()
+        log.info("GPU available: %s", gpu)
+
         # PyTorch ≥2.6 defaults weights_only=True which blocks TTS's pickle-based
         # checkpoint loading. Patch torch.load for the duration of model init only.
         _orig_load = torch.load
@@ -42,8 +45,8 @@ class CoquiTTS:
 
         torch.load = _permissive_load
         try:
-            log.info("Loading Coqui model %s", self._model)
-            self._tts = TTS(model_name=self._model, progress_bar=True)
+            log.info("Loading Coqui model %s (gpu=%s)", self._model, gpu)
+            self._tts = TTS(model_name=self._model, progress_bar=True, gpu=gpu)
         finally:
             torch.load = _orig_load
 
