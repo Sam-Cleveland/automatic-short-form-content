@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Fonts bundled with the package (OFL licensed, redistributable)
 _BUNDLED_FONTS = Path(__file__).parent / "resources" / "fonts"
@@ -39,6 +39,27 @@ def resolve_font(font_spec: str, resources_dir: str | Path = ".") -> str:
     )
 
 
+def _llm_system_prompt_default() -> str:
+    from .sources.llm_story import DEFAULT_SYSTEM_PROMPT  # noqa: PLC0415
+    return DEFAULT_SYSTEM_PROMPT
+
+
+def _llm_story_prompt_default() -> str:
+    from .sources.llm_story import DEFAULT_STORY_PROMPT  # noqa: PLC0415
+    return DEFAULT_STORY_PROMPT
+
+
+class LLMStoryConfig(BaseModel):
+    api_type: str = "openai"   # "openai" (also covers Ollama/vLLM/Together) or "anthropic"
+    api_url: str = ""          # base URL override; empty = SDK default
+    api_key: str = ""          # falls back to OPENAI_API_KEY / ANTHROPIC_API_KEY env vars
+    model: str = "gpt-4o-mini" # for anthropic use e.g. claude-haiku-4-5-20251001
+    system_prompt: str = Field(default_factory=_llm_system_prompt_default)
+    story_prompt: str = Field(default_factory=_llm_story_prompt_default)
+    max_tokens: int = 1024
+    temperature: float = 0.9
+
+
 class BackendsConfig(BaseModel):
     source: str = "reddit"
     tts: str = "coqui"
@@ -63,6 +84,7 @@ class CoquiConfig(BaseModel):
     speaker_wav: str = "en_uk_003.mp3"
     speaker: str = ""  # built-in XTTS speaker name; takes priority over speaker_wav when set
     language: str = "en"
+    speed: float = 1.0
 
 
 class KokoroConfig(BaseModel):
@@ -74,6 +96,7 @@ class KokoroConfig(BaseModel):
 
 class EdgeTTSConfig(BaseModel):
     voice: str = "en-GB-RyanNeural"  # en-US-GuyNeural, en-GB-RyanNeural, en-US-AriaNeural
+    speed: float = 1.0
 
 
 class ElevenLabsConfig(BaseModel):
@@ -81,6 +104,7 @@ class ElevenLabsConfig(BaseModel):
     model: str = "eleven_multilingual_v2"
     stability: float = 0.5
     similarity_boost: float = 0.75
+    speed: float = 1.0
 
 
 class WhisperLocalConfig(BaseModel):
@@ -117,6 +141,7 @@ class Config(BaseModel):
     tts_elevenlabs: ElevenLabsConfig = ElevenLabsConfig()
     transcribe_whisper_local: WhisperLocalConfig = WhisperLocalConfig()
     transcribe_whisper_api: WhisperAPIConfig = WhisperAPIConfig()
+    source_llm_story: LLMStoryConfig = Field(default_factory=LLMStoryConfig)
     video: VideoConfig = VideoConfig()
     batch: BatchConfig = BatchConfig()
 

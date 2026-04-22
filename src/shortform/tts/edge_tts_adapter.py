@@ -27,17 +27,22 @@ class EdgeTTS:
     compatible with the pipeline's concat_audio step.
     """
 
-    def __init__(self, voice: str = "en-GB-RyanNeural") -> None:
+    def __init__(self, voice: str = "en-GB-RyanNeural", speed: float = 1.0) -> None:
         self._voice = voice
+        # edge-tts uses a percentage rate string e.g. "+15%" or "-10%"
+        pct = int(round((speed - 1.0) * 100))
+        self._rate = f"{pct:+d}%"
 
     def synthesize(self, text: str, out_path: Path) -> None:
         import edge_tts  # noqa: PLC0415
 
-        log.debug("Edge TTS synthesizing (voice=%s)", self._voice)
+        log.debug("Edge TTS synthesizing (voice=%s, rate=%s)", self._voice, self._rate)
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
             tmp_path = Path(tmp.name)
         try:
-            asyncio.run(edge_tts.Communicate(text, voice=self._voice).save(str(tmp_path)))
+            asyncio.run(
+                edge_tts.Communicate(text, voice=self._voice, rate=self._rate).save(str(tmp_path))
+            )
             # Convert MP3 → WAV for pipeline compatibility
             subprocess.run(
                 [_ffmpeg(), "-y", "-i", str(tmp_path), str(out_path)],

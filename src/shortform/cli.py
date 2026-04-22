@@ -51,6 +51,32 @@ def generate(
 
 
 @app.command()
+def story(
+    topic: str = typer.Argument("", help="Optional topic/theme hint (e.g. 'AITA coworker stole my lunch')."),
+    config: Path = _CONFIG_OPT,
+    tts: Optional[str] = typer.Option(None, "--tts", help="TTS backend override (kokoro|edge_tts|coqui|elevenlabs)."),
+    transcribe: Optional[str] = typer.Option(None, "--transcribe", help="Transcription backend override (whisper_local|whisper_api)."),
+    force: bool = _FORCE_OPT,
+    verbose: bool = _VERBOSE_OPT,
+) -> None:
+    """Generate an AI-written Reddit-style story and render to MP4."""
+    setup_logging(logging.DEBUG if verbose else logging.INFO)
+    cfg = load_config(config)
+    cfg.backends.source = "llm_story"
+    if tts:
+        cfg.backends.tts = tts
+    if transcribe:
+        cfg.backends.transcribe = transcribe
+    if force:
+        cfg.batch.skip_if_exists = False
+
+    from .pipeline import run
+
+    out = run(topic, cfg)
+    typer.echo(f"Output: {out}")
+
+
+@app.command()
 def batch(
     urls_file: Path = typer.Argument(Path("urls.txt"), help="File with one URL per line."),
     config: Path = _CONFIG_OPT,

@@ -34,6 +34,7 @@ cloud = [
     "openai>=1.30",
     "elevenlabs>=1.0",
     "edge-tts>=6.1",
+    "anthropic>=0.40",
 ]
 # Local ML models (heavy — pulls in PyTorch, for XTTS v2 / Whisper local)
 local = [

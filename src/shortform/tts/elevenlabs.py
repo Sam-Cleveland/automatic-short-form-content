@@ -4,10 +4,30 @@ from __future__ import annotations
 
 import logging
 import os
+import subprocess
 import wave
 from pathlib import Path
 
 log = logging.getLogger(__name__)
+
+def _ffmpeg() -> str:
+    try:
+        import imageio_ffmpeg  # noqa: PLC0415
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return "ffmpeg"
+
+
+def _apply_atempo(path: Path, speed: float) -> None:
+    if abs(speed - 1.0) < 0.01:
+        return
+    tmp = path.with_suffix(".atempo_tmp.wav")
+    subprocess.run(
+        [_ffmpeg(), "-y", "-i", str(path), "-af", f"atempo={speed:.4f}", str(tmp)],
+        check=True, capture_output=True,
+    )
+    tmp.replace(path)
+
 
 # ElevenLabs PCM format: 44 100 Hz, 16-bit, mono
 _SAMPLE_RATE = 44_100
@@ -28,11 +48,13 @@ class ElevenLabsTTS:
         model: str = "eleven_multilingual_v2",
         stability: float = 0.5,
         similarity_boost: float = 0.75,
+        speed: float = 1.0,
     ) -> None:
         self._voice_id = voice_id
         self._model = model
         self._stability = stability
         self._similarity_boost = similarity_boost
+        self._speed = speed
         self._client = None  # deferred
 
     def _init(self) -> None:
@@ -64,4 +86,5 @@ class ElevenLabsTTS:
             wf.setframerate(_SAMPLE_RATE)
             wf.writeframes(pcm)
 
+        _apply_atempo(out_path, self._speed)
         log.debug("Synthesized → %s (%d bytes PCM)", out_path, len(pcm))

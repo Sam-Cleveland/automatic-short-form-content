@@ -129,8 +129,9 @@ def compose(
 
     # fmt: off
     filter_complex = (
-        # Scale stock to target resolution
-        f"[0:v]scale={width}:{height},setsar=1,trim=duration={duration}[base];"
+        # Scale stock to fill target resolution (maintain AR, crop excess)
+        f"[0:v]scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height},setsar=1,trim=duration={duration}[base];"
         # Overlay title card centred for the first title_dur seconds
         f"[base][2:v]overlay=(W-w)/2:(H-h)/2:enable='lt(t,{title_dur:.4f})'[titled];"
         # Burn in ASS captions

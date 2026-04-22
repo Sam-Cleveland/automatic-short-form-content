@@ -24,7 +24,7 @@ def _build_tts(cfg: Config):
         from .tts.coqui import CoquiTTS  # noqa: PLC0415
 
         c = cfg.tts_coqui
-        return CoquiTTS(model=c.model, speaker_wav=c.speaker_wav, language=c.language, speaker=c.speaker)
+        return CoquiTTS(model=c.model, speaker_wav=c.speaker_wav, language=c.language, speaker=c.speaker, speed=c.speed)
     if backend == "kokoro":
         from .tts.kokoro import KokoroTTS  # noqa: PLC0415
 
@@ -33,7 +33,7 @@ def _build_tts(cfg: Config):
     if backend == "edge_tts":
         from .tts.edge_tts_adapter import EdgeTTS  # noqa: PLC0415
 
-        return EdgeTTS(voice=cfg.tts_edge.voice)
+        return EdgeTTS(voice=cfg.tts_edge.voice, speed=cfg.tts_edge.speed)
     if backend == "elevenlabs":
         from .tts.elevenlabs import ElevenLabsTTS  # noqa: PLC0415
 
@@ -43,8 +43,22 @@ def _build_tts(cfg: Config):
             model=c.model,
             stability=c.stability,
             similarity_boost=c.similarity_boost,
+            speed=c.speed,
         )
     raise ValueError(f"Unknown TTS backend: {backend!r}. Choose 'kokoro', 'edge_tts', 'coqui', or 'elevenlabs'.")
+
+
+def _build_source(cfg: Config):
+    backend = cfg.backends.source
+    if backend == "reddit":
+        from .sources.reddit import RedditSource  # noqa: PLC0415
+
+        return RedditSource()
+    if backend == "llm_story":
+        from .sources.llm_story import LLMStorySource  # noqa: PLC0415
+
+        return LLMStorySource(cfg.source_llm_story)
+    raise ValueError(f"Unknown source backend: {backend!r}. Choose 'reddit' or 'llm_story'.")
 
 
 def _build_transcriber(cfg: Config):
@@ -81,7 +95,6 @@ def run(url: str, cfg: Config) -> Path:
     Raises on any unrecoverable error — caller is responsible for catching
     and logging in batch mode.
     """
-    from .sources.reddit import RedditSource
     from .text.cleaner import censor, prepare_body, prepare_title_for_display, prepare_title_for_tts
     from .render import captions as captions_mod
     from .render import compositor
@@ -89,7 +102,7 @@ def run(url: str, cfg: Config) -> Path:
     from .config import resolve_font
 
     # ── 1. Fetch post ──────────────────────────────────────────────────────
-    post = RedditSource().fetch(url)
+    post = _build_source(cfg).fetch(url)
     log.info("Fetched: %r", post.title)
 
     # ── 2. Text processing ─────────────────────────────────────────────────
@@ -153,6 +166,7 @@ def run(url: str, cfg: Config) -> Path:
             font_path=resolve_font(cfg.assets.title_font, resources),
             user_overlay=str(resources / cfg.assets.user_overlay),
             likes_comments_overlay=str(resources / cfg.assets.likes_comments_overlay),
+            width=cfg.video.width,
         )
 
         # Concatenate audio

@@ -27,7 +27,7 @@ assets:
 #         bf_emma/bf_isabella (British female), am_adam (US male, deeper)
 tts_kokoro:
   voice: bm_george
-  speed: 1.0
+  speed: 1.15
   lang: en-us
   model_repo: fastrtc/kokoro-onnx
 
@@ -64,10 +64,27 @@ transcribe_whisper_local:
 transcribe_whisper_api:
   model: whisper-1
 
+# LLM story generator config (used by `shortform story`)
+# api_type: "openai" works for OpenAI, Ollama, vLLM, LM Studio, Together AI, etc.
+#           "anthropic" uses the Anthropic Messages API natively.
+# api_url:  leave empty to use the SDK default for api_type.
+#           for Ollama: http://localhost:11434/v1
+#           for LM Studio: http://localhost:1234/v1
+# api_key:  can also be set via OPENAI_API_KEY or ANTHROPIC_API_KEY env vars.
+# model:    for anthropic use e.g. claude-haiku-4-5-20251001
+# system_prompt / story_prompt: omit to use the built-in viral-optimized defaults.
+source_llm_story:
+  api_type: openai
+  api_url: "https://api.openai.com/v1"
+  api_key: "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"
+  model: gpt-4o-mini
+  max_tokens: 1024
+  temperature: 0.9
+
 # Video output
 video:
-  width: 720
-  height: 720
+  width: 1080
+  height: 1920
   fps: 60
   audio_codec: aac
   video_codec: libx264

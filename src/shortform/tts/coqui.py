@@ -4,9 +4,29 @@ from __future__ import annotations
 
 import logging
 import os
+import subprocess
 from pathlib import Path
 
 log = logging.getLogger(__name__)
+
+
+def _ffmpeg() -> str:
+    try:
+        import imageio_ffmpeg  # noqa: PLC0415
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return "ffmpeg"
+
+
+def _apply_atempo(path: Path, speed: float) -> None:
+    if abs(speed - 1.0) < 0.01:
+        return
+    tmp = path.with_suffix(".atempo_tmp.wav")
+    subprocess.run(
+        [_ffmpeg(), "-y", "-i", str(path), "-af", f"atempo={speed:.4f}", str(tmp)],
+        check=True, capture_output=True,
+    )
+    tmp.replace(path)
 
 
 class CoquiTTS:
@@ -16,11 +36,14 @@ class CoquiTTS:
     importing this module is safe even when the `[local]` extra is absent.
     """
 
-    def __init__(self, model: str, speaker_wav: str, language: str = "en", speaker: str = "") -> None:
+    def __init__(
+        self, model: str, speaker_wav: str, language: str = "en", speaker: str = "", speed: float = 1.0
+    ) -> None:
         self._model = model
         self._speaker_wav = speaker_wav
         self._speaker = speaker  # built-in speaker name; takes priority over speaker_wav
         self._language = language
+        self._speed = speed
         self._tts = None  # deferred
 
     def _init(self) -> None:
@@ -59,4 +82,5 @@ class CoquiTTS:
         else:
             kwargs["speaker_wav"] = self._speaker_wav
         self._tts.tts_to_file(**kwargs)
+        _apply_atempo(out_path, self._speed)
         log.debug("Synthesized → %s", out_path)
