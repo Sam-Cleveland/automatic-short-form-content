@@ -15,8 +15,8 @@ paths:
 
 # Assets used by the title card renderer
 assets:
-  title_font: /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
-  caption_font: Bangers-Regular.ttf
+  title_font: Nunito-Bold.ttf
+  caption_font: Anton-Regular.ttf
   user_overlay: user.png
   likes_comments_overlay: likes_comments.png
   pfp_overlay: pfp.png

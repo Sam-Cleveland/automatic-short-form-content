@@ -56,6 +56,10 @@ shortform = "shortform.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/shortform"]
+artifacts = [
+    "src/shortform/resources/fonts/*.ttf",
+    "src/shortform/resources/fonts/*.txt",
+]
 
 [tool.ruff]
 line-length = 100

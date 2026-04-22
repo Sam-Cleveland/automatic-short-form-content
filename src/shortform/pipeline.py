@@ -86,6 +86,7 @@ def run(url: str, cfg: Config) -> Path:
     from .render import captions as captions_mod
     from .render import compositor
     from .render import title_card
+    from .config import resolve_font
 
     # ── 1. Fetch post ──────────────────────────────────────────────────────
     post = RedditSource().fetch(url)
@@ -149,7 +150,7 @@ def run(url: str, cfg: Config) -> Path:
         title_card.render(
             title_display,
             title_card_path,
-            font_path=cfg.assets.title_font,
+            font_path=resolve_font(cfg.assets.title_font, resources),
             user_overlay=str(resources / cfg.assets.user_overlay),
             likes_comments_overlay=str(resources / cfg.assets.likes_comments_overlay),
         )
@@ -163,7 +164,7 @@ def run(url: str, cfg: Config) -> Path:
         # Copy caption font into temp dir so FFmpeg's fontsdir has no spaces
         import shutil  # noqa: PLC0415
 
-        caption_font_src = resources / cfg.assets.caption_font
+        caption_font_src = Path(resolve_font(cfg.assets.caption_font, resources))
         caption_font_tmp = tmp / caption_font_src.name
         shutil.copy2(caption_font_src, caption_font_tmp)
 

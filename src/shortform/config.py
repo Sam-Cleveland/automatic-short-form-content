@@ -12,6 +12,32 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
+# Fonts bundled with the package (OFL licensed, redistributable)
+_BUNDLED_FONTS = Path(__file__).parent / "resources" / "fonts"
+
+
+def resolve_font(font_spec: str, resources_dir: str | Path = ".") -> str:
+    """Resolve a font specifier to an absolute path.
+
+    Resolution order:
+    1. Absolute path — returned as-is (user-supplied system font)
+    2. Relative path under resources_dir — explicit project-local font
+    3. Bundled font in the package's resources/fonts/ directory
+    """
+    p = Path(font_spec)
+    if p.is_absolute():
+        return str(p)
+    candidate = Path(resources_dir) / font_spec
+    if candidate.exists():
+        return str(candidate)
+    bundled = _BUNDLED_FONTS / font_spec
+    if bundled.exists():
+        return str(bundled)
+    raise FileNotFoundError(
+        f"Font {font_spec!r} not found in resources_dir={resources_dir!r} "
+        f"or bundled fonts ({_BUNDLED_FONTS})"
+    )
+
 
 class BackendsConfig(BaseModel):
     source: str = "reddit"
@@ -26,8 +52,8 @@ class PathsConfig(BaseModel):
 
 
 class AssetsConfig(BaseModel):
-    title_font: str = "/Library/Fonts/SF-Pro-Rounded-Semibold.otf"
-    caption_font: str = "Bangers-Regular.ttf"
+    title_font: str = "Nunito-Bold.ttf"
+    caption_font: str = "Anton-Regular.ttf"
     user_overlay: str = "user.png"
     likes_comments_overlay: str = "likes_comments.png"
 
