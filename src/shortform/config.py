@@ -12,8 +12,9 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field
 
-# Fonts bundled with the package (OFL licensed, redistributable)
-_BUNDLED_FONTS = Path(__file__).parent / "resources" / "fonts"
+# Resources bundled with the package
+_BUNDLED_RESOURCES = Path(__file__).parent / "resources"
+_BUNDLED_FONTS = _BUNDLED_RESOURCES / "fonts"
 
 
 def resolve_font(font_spec: str, resources_dir: str | Path = ".") -> str:
@@ -36,6 +37,30 @@ def resolve_font(font_spec: str, resources_dir: str | Path = ".") -> str:
     raise FileNotFoundError(
         f"Font {font_spec!r} not found in resources_dir={resources_dir!r} "
         f"or bundled fonts ({_BUNDLED_FONTS})"
+    )
+
+
+def resolve_asset(asset_spec: str, resources_dir: str | Path = ".") -> str:
+    """Resolve an asset filename to an absolute path.
+
+    Resolution order:
+    1. Absolute path — returned as-is
+    2. Relative path under resources_dir — project-local or user-supplied asset
+    3. Bundled asset in the package's resources/ directory
+    """
+    p = Path(asset_spec)
+    if p.is_absolute():
+        return str(p)
+    candidate = Path(resources_dir) / asset_spec
+    if candidate.exists():
+        return str(candidate)
+    bundled = _BUNDLED_RESOURCES / asset_spec
+    if bundled.exists():
+        return str(bundled)
+    raise FileNotFoundError(
+        f"Asset {asset_spec!r} not found in resources_dir={resources_dir!r} "
+        f"or bundled resources ({_BUNDLED_RESOURCES}). "
+        f"Supply a {asset_spec!r} file in your project directory or set assets.{asset_spec.split('.')[0]}_overlay in config."
     )
 
 

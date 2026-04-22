@@ -99,7 +99,7 @@ def run(url: str, cfg: Config) -> Path:
     from .render import captions as captions_mod
     from .render import compositor
     from .render import title_card
-    from .config import resolve_font
+    from .config import resolve_asset, resolve_font
 
     # ── 1. Fetch post ──────────────────────────────────────────────────────
     post = _build_source(cfg).fetch(url)
@@ -164,8 +164,8 @@ def run(url: str, cfg: Config) -> Path:
             title_display,
             title_card_path,
             font_path=resolve_font(cfg.assets.title_font, resources),
-            user_overlay=str(resources / cfg.assets.user_overlay),
-            likes_comments_overlay=str(resources / cfg.assets.likes_comments_overlay),
+            user_overlay=resolve_asset(cfg.assets.user_overlay, resources),
+            likes_comments_overlay=resolve_asset(cfg.assets.likes_comments_overlay, resources),
             width=cfg.video.width,
         )
 

@@ -11,16 +11,16 @@ backends:
 paths:
   stock_dir: stock
   output_dir: output
-  resources_dir: .     # flat layout currently; assets live at repo root
+  resources_dir: .     # root of your project; user-supplied assets (user.png) live here
 
 # Assets used by the title card renderer
 assets:
   title_font: Nunito-Bold.ttf
   caption_font: Anton-Regular.ttf
+  # user.png — supply your own (gitignored). Should be a transparent-bg PNG of a Reddit avatar.
   user_overlay: user.png
+  # likes_comments.png — bundled default; override with your own if desired.
   likes_comments_overlay: likes_comments.png
-  pfp_overlay: pfp.png
-  awards_overlay: awards.png
 
 # TTS (Kokoro local) config — fast CPU-based ONNX, no GPU required
 # Voices: bm_george (British male), am_michael (US male), af_bella/af_heart (US female)
@@ -75,8 +75,8 @@ transcribe_whisper_api:
 # system_prompt / story_prompt: omit to use the built-in viral-optimized defaults.
 source_llm_story:
   api_type: openai
-  api_url: "https://api.openai.com/v1"
-  api_key: "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"
+  api_url: ""        # leave empty for OpenAI; set to http://localhost:11434/v1 for Ollama etc.
+  api_key: ""        # leave empty to use OPENAI_API_KEY / ANTHROPIC_API_KEY env var
   model: gpt-4o-mini
   max_tokens: 1024
   temperature: 0.9

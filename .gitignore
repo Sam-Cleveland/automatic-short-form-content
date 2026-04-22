@@ -35,6 +35,10 @@ title.wav
 output[0-9]*.wav
 source.mp3
 
+# User-supplied assets (not bundled — provide your own)
+user.png
+en_uk_003.mp3
+
 # Model caches
 .coqui/
 *.pt

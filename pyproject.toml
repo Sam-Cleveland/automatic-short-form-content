@@ -60,6 +60,7 @@ packages = ["src/shortform"]
 artifacts = [
     "src/shortform/resources/fonts/*.ttf",
     "src/shortform/resources/fonts/*.txt",
+    "src/shortform/resources/*.png",
 ]
 
 [tool.ruff]
