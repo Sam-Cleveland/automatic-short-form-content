@@ -87,7 +87,7 @@ class LLMStoryConfig(BaseModel):
 
 class BackendsConfig(BaseModel):
     source: str = "reddit"
-    tts: str = "coqui"
+    tts: str = "kokoro"
     transcribe: str = "whisper_local"
 
 
@@ -171,7 +171,25 @@ class Config(BaseModel):
     batch: BatchConfig = BatchConfig()
 
 
+_DEFAULT_CONFIG = Path(__file__).parent.parent.parent / "configs" / "default.yaml"
+
+
+def _deep_merge(base: dict, override: dict) -> dict:
+    result = base.copy()
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(result.get(k), dict):
+            result[k] = _deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
 def load(path: str | Path = "configs/default.yaml") -> Config:
-    with open(path) as f:
+    with open(_DEFAULT_CONFIG) as f:
         data = yaml.safe_load(f) or {}
+    path = Path(path)
+    if path.resolve() != _DEFAULT_CONFIG.resolve():
+        with open(path) as f:
+            override = yaml.safe_load(f) or {}
+        data = _deep_merge(data, override)
     return Config.model_validate(data)
