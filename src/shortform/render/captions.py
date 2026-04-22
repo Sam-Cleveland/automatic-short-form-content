@@ -68,7 +68,7 @@ def write(
         if not text:
             continue
         lines.append(
-            f"Dialogue: 0,{_ts(start)},{_ts(end)},Default,,0,0,0,,{_POP}{text}"
+            f"Dialogue: 0,{_ts(start)},{_ts(end)},Default,,0,0,0,,{_POP}{text}\n"
         )
 
     out_path.write_text("".join(lines), encoding="utf-8")
